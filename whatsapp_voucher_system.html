@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RM10 Cash Voucher - Redeem Now</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .admin-container {
+            max-width: 900px;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+        
+        .voucher-amount {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .amount {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .voucher-code {
+            background: white;
+            color: #667eea;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 15px;
+            letter-spacing: 2px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95em;
+        }
+        
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .success-box {
+            background: #d1fae5;
+            border: 2px solid #10b981;
+            color: #065f46;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .success-box h2 {
+            color: #065f46;
+            margin-bottom: 10px;
+        }
+        
+        .error-box {
+            background: #fee2e2;
+            border: 2px solid #ef4444;
+            color: #991b1b;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .info-box {
+            background: #e0e7ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.9em;
+            color: #4338ca;
+        }
+        
+        .whatsapp-btn {
+            background: #25D366;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .whatsapp-btn:hover {
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
+        }
+        
+        .admin-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+        }
+        
+        .admin-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+        
+        .voucher-link {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 2px solid #e0e0e0;
+            word-break: break-all;
+        }
+        
+        .voucher-link.used {
+            background: #f3f4f6;
+            opacity: 0.6;
+        }
+        
+        .copy-btn {
+            background: #10b981;
+            padding: 8px 15px;
+            font-size: 14px;
+            margin-top: 10px;
+            width: auto;
+            display: inline-block;
+        }
+        
+        .warning-banner {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #92400e;
+        }
+        
+        .ended-banner {
+            background: #fee2e2;
+            border: 2px solid #ef4444;
+            color: #991b1b;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 0.9em;
+        }
+        
+        th {
+            background: #f3f4f6;
+            font-weight: 600;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Customer View -->
+    <div id="customerView" class="container">
+        <div class="logo">
+            <h1>🎁 RM10 Cash Voucher</h1>
+            <p style="color: #666;">Limited to 50 redemptions only</p>
+        </div>
+        
+        <div id="loadingMessage" style="text-align: center; padding: 40px; color: #666;">
+            <p>Loading voucher...</p>
+        </div>
+        
+        <div id="voucherContent" class="hidden">
+            <div class="voucher-amount">
+                <div>You're redeeming</div>
+                <div class="amount">RM10</div>
+                <div class="voucher-code" id="displayCode">-</div>
+            </div>
+            
+            <div id="errorMessage" class="hidden"></div>
+            
+            <div id="redemptionForm" class="hidden">
+                <div class="form-group">
+                    <label>Your Name *</label>
+                    <input type="text" id="customerName" placeholder="Enter your full name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Phone Number *</label>
+                    <input type="tel" id="customerPhone" placeholder="01X-XXX XXXX" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Email (Optional)</label>
+                    <input type="email" id="customerEmail" placeholder="your@email.com">
+                </div>
+                
+                <div class="info-box">
+                    ℹ️ By redeeming, you agree to collect your RM10 cash voucher at our counter.
+                </div>
+                
+                <button onclick="submitRedemption()" id="submitBtn">
+                    Redeem RM10 Now
+                </button>
+            </div>
+            
+            <div id="successMessage" class="hidden"></div>
+        </div>
+    </div>
+    
+    <!-- Admin View -->
+    <div id="adminView" class="container admin-container hidden">
+        <h1>📊 Admin Dashboard</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 20px;">RM10 Voucher Management System</p>
+        
+        <div id="warningBanner" class="hidden"></div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalVouchers">50</div>
+                <div class="stat-label">Total Vouchers</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="redeemedCount">0</div>
+                <div class="stat-label">Redeemed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="availableCount">50</div>
+                <div class="stat-label">Available</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalValue">RM0</div>
+                <div class="stat-label">Total Paid</div>
+            </div>
+        </div>
+        
+        <div class="admin-section">
+            <h2>📱 Generate WhatsApp Links</h2>
+            <p style="color: #666; margin-bottom: 15px;">Click to generate individual WhatsApp messages for each voucher</p>
+            
+            <button onclick="generateAllLinks()">
+                🔗 Generate All 50 WhatsApp Links
+            </button>
+            
+            <div id="whatsappLinks" style="margin-top: 20px;"></div>
+        </div>
+        
+        <div class="admin-section">
+            <h2>📋 Redemption Log</h2>
+            <div id="redemptionLog">
+                <p style="color: #999; text-align: center;">No redemptions yet</p>
+            </div>
+        </div>
+        
+        <div class="admin-section">
+            <button onclick="downloadReport()" style="background: #10b981;">
+                📥 Download Excel Report
+            </button>
+            <button onclick="resetSystem()" style="background: #ef4444; margin-top: 10px;">
+                🔄 Reset All Data
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let vouchers = [];
+        let currentVoucherCode = '';
+        const BASE_URL = window.location.href.split('?')[0];
+        
+        // Initialize system
+        function initSystem() {
+            const saved = localStorage.getItem('whatsappVoucherSystem');
+            if (saved) {
+                vouchers = JSON.parse(saved);
+            } else {
+                // Generate 50 vouchers automatically
+                for (let i = 0; i < 50; i++) {
+                    vouchers.push({
+                        code: `RM10-${String(i + 1).padStart(3, '0')}`,
+                        value: 10,
+                        redeemed: false,
+                        customerName: null,
+                        customerPhone: null,
+                        customerEmail: null,
+                        redeemedAt: null
+                    });
+                }
+                saveSystem();
+            }
+            
+            // Check if this is admin view or customer view
+            const urlParams = new URLSearchParams(window.location.search);
+            const voucherCode = urlParams.get('voucher');
+            const isAdmin = urlParams.get('admin');
+            
+            if (isAdmin === 'true') {
+                showAdminView();
+            } else if (voucherCode) {
+                showCustomerView(voucherCode);
+            } else {
+                showAdminView(); // Default to admin if no params
+            }
+        }
+        
+        // Save system
+        function saveSystem() {
+            localStorage.setItem('whatsappVoucherSystem', JSON.stringify(vouchers));
+        }
+        
+        // Show customer view
+        function showCustomerView(code) {
+            document.getElementById('customerView').classList.remove('hidden');
+            document.getElementById('adminView').classList.add('hidden');
+            
+            currentVoucherCode = code;
+            const voucher = vouchers.find(v => v.code === code);
+            
+            setTimeout(() => {
+                document.getElementById('loadingMessage').classList.add('hidden');
+                document.getElementById('voucherContent').classList.remove('hidden');
+                
+                if (!voucher) {
+                    showError('❌ Invalid Voucher Code', 'This voucher code does not exist. Please check with the promotion organizer.');
+                    return;
+                }
+                
+                // Check if all vouchers are redeemed
+                const redeemedCount = vouchers.filter(v => v.redeemed).length;
+                if (redeemedCount >= 50) {
+                    showError('🚫 Promotion Ended', 'All 50 vouchers have been fully redeemed. Total distributed: RM500. Thank you for your interest!');
+                    return;
+                }
+                
+                if (voucher.redeemed) {
+                    showError('⚠️ Already Redeemed', `This voucher was redeemed by ${voucher.customerName} on ${new Date(voucher.redeemedAt).toLocaleDateString()}`);
+                    return;
+                }
+                
+                // Show redemption form
+                document.getElementById('displayCode').textContent = code;
+                document.getElementById('redemptionForm').classList.remove('hidden');
+            }, 800);
+        }
+        
+        // Show error
+        function showError(title, message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.className = 'error-box';
+            errorDiv.innerHTML = `<h2>${title}</h2><p>${message}</p>`;
+            errorDiv.classList.remove('hidden');
+        }
+        
+        // Submit redemption
+        function submitRedemption() {
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const email = document.getElementById('customerEmail').value.trim();
+            
+            if (!name || !phone) {
+                alert('Please fill in your name and phone number');
+                return;
+            }
+            
+            const voucher = vouchers.find(v => v.code === currentVoucherCode);
+            if (!voucher || voucher.redeemed) {
+                showError('❌ Error', 'This voucher is no longer available');
+                return;
+            }
+            
+            // Check limit again
+            const redeemedCount = vouchers.filter(v => v.redeemed).length;
+            if (redeemedCount >= 50) {
+                showError('🚫 Promotion Ended', 'All 50 vouchers have been redeemed while you were filling the form. Sorry!');
+                return;
+            }
+            
+            // Mark as redeemed
+            voucher.redeemed = true;
+            voucher.customerName = name;
+            voucher.customerPhone = phone;
+            voucher.customerEmail = email;
+            voucher.redeemedAt = new Date().toISOString();
+            
+            saveSystem();
+            
+            // Show success
+            document.getElementById('redemptionForm').classList.add('hidden');
+            const successDiv = document.getElementById('successMessage');
+            const remaining = 50 - (redeemedCount + 1);
+            
+            let successHTML = `
+                <div class="success-box">
+                    <h2>✅ Redemption Successful!</h2>
+                    <p style="font-size: 1.1em; margin: 15px 0;">
+                        <strong>${name}</strong>, your RM10 voucher has been confirmed!
+                    </p>
+                    <p style="margin: 10px 0;">
+                        Show this confirmation at our counter to collect your RM10.
+                    </p>
+                    <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <strong>Voucher Code:</strong> ${currentVoucherCode}<br>
+                        <strong>Date:</strong> ${new Date().toLocaleString()}
+                    </div>
+            `;
+            
+            if (remaining === 0) {
+                successHTML += `
+                    <div style="margin-top: 15px; padding: 10px; background: #fee2e2; border-radius: 8px; color: #991b1b;">
+                        🎉 You got the LAST voucher! All 50 vouchers are now fully redeemed!
+                    </div>
+                `;
+            } else if (remaining <= 5) {
+                successHTML += `
+                    <div style="margin-top: 15px; padding: 10px; background: #fef3c7; border-radius: 8px; color: #92400e;">
+                        ⚠️ Only ${remaining} vouchers left!
+                    </div>
+                `;
+            }
+            
+            successHTML += `</div>`;
+            
+            // Add WhatsApp share button
+            successHTML += `
+                <button onclick="shareOnWhatsApp()" class="whatsapp-btn">
+                    <span style="font-size: 1.5em;">📱</span>
+                    Share on WhatsApp
+                </button>
+            `;
+            
+            successDiv.innerHTML = successHTML;
+            successDiv.classList.remove('hidden');
+        }
+        
+        // Share on WhatsApp
+        function shareOnWhatsApp() {
+            const text = `🎉 I just redeemed my RM10 cash voucher!\n\nVoucher Code: ${currentVoucherCode}\n\nThere might be vouchers left! Check it out!`;
+            const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
+        
+        // Show admin view
+        function showAdminView() {
+            document.getElementById('customerView').classList.add('hidden');
+            document.getElementById('adminView').classList.remove('hidden');
+            updateAdminDashboard();
+        }
+        
+        // Update admin dashboard
+        function updateAdminDashboard() {
+            const redeemed = vouchers.filter(v => v.redeemed).length;
+            const available = vouchers.length - redeemed;
+            const totalValue = redeemed * 10;
+            
+            document.getElementById('totalVouchers').textContent = vouchers.length;
+            document.getElementById('redeemedCount').textContent = redeemed;
+            document.getElementById('availableCount').textContent = available;
+            document.getElementById('totalValue').textContent = `RM${totalValue}`;
+            
+            // Show warning banner
+            const banner = document.getElementById('warningBanner');
+            if (redeemed >= 50) {
+                banner.className = 'warning-banner ended-banner';
+                banner.textContent = '🚫 ALL 50 VOUCHERS FULLY REDEEMED';
+                banner.classList.remove('hidden');
+            } else if (redeemed >= 45) {
+                banner.className = 'warning-banner';
+                banner.textContent = `⚠️ ALMOST SOLD OUT! Only ${available} vouchers remaining`;
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
+            
+            // Update redemption log
+            const log = document.getElementById('redemptionLog');
+            const redeemedVouchers = vouchers.filter(v => v.redeemed);
+            
+            if (redeemedVouchers.length === 0) {
+                log.innerHTML = '<p style="color: #999; text-align: center;">No redemptions yet</p>';
+            } else {
+                log.innerHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${redeemedVouchers.map(v => `
+                                <tr>
+                                    <td><strong>${v.code}</strong></td>
+                                    <td>${v.customerName}</td>
+                                    <td>${v.customerPhone}</td>
+                                    <td>${new Date(v.redeemedAt).toLocaleDateString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+        }
+        
+        // Generate all WhatsApp links
+        function generateAllLinks() {
+            const linksDiv = document.getElementById('whatsappLinks');
+            const availableVouchers = vouchers.filter(v => !v.redeemed);
+            
+            if (availableVouchers.length === 0) {
+                linksDiv.innerHTML = '<p style="color: #999;">All vouchers have been redeemed!</p>';
+                return;
+            }
+            
+            let html = '<h3 style="margin: 20px 0 10px 0;">Available Vouchers:</h3>';
+            
+            availableVouchers.forEach(v => {
+                const voucherUrl = `${BASE_URL}?voucher=${v.code}`;
+                const whatsappMessage = `🎁 *RM10 Cash Voucher for You!*\n\nYou've received a special RM10 cash voucher!\n\n*Voucher Code:* ${v.code}\n\nClick the link below to redeem:\n${voucherUrl}\n\n⚠️ Limited to 50 people only. First come first served!`;
+                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`;
+                
+                html += `
+                    <div class="voucher-link">
+                        <strong>${v.code}</strong>
+                        <div style="margin: 10px 0; font-size: 0.9em; color: #666; word-break: break-all;">
+                            ${voucherUrl}
+                        </div>
+                        <button class="copy-btn" onclick="copyToClipboard('${voucherUrl}', this)">
+                            📋 Copy Link
+                        </button>
+                        <button class="copy-btn whatsapp-btn" onclick="window.open('${whatsappUrl}', '_blank')" style="margin-left: 10px; background: #25D366;">
+                            📱 Send via WhatsApp
+                        </button>
+                    </div>
+                `;
+            });
+            
+            // Add bulk copy option
+            html += `
+                <button onclick="copyAllLinks()" style="margin-top: 20px; background: #10b981;">
+                    📋 Copy All Available Links
+                </button>
+            `;
+            
+            linksDiv.innerHTML = html;
+        }
+        
+        // Copy to clipboard
+        function copyToClipboard(text, button) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = '✅ Copied!';
+                button.style.background = '#10b981';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '';
+                }, 2000);
+            });
+        }
+        
+        // Copy all links
+        function copyAllLinks() {
+            const availableVouchers = vouchers.filter(v => !v.redeemed);
+            const allLinks = availableVouchers.map(v => 
+                `${v.code}: ${BASE_URL}?voucher=${v.code}`
+            ).join('\n');
+            
+            navigator.clipboard.writeText(allLinks).then(() => {
+                alert(`✅ Copied ${availableVouchers.length} voucher links to clipboard!`);
+            });
+        }
+        
+        // Download report
+        function downloadReport() {
+            let csv = 'Voucher Code,Value,Status,Customer Name,Phone,Email,Redeemed Date\n';
+            vouchers.forEach(v => {
+                csv += `${v.code},RM${v.value},${v.redeemed ? 'Redeemed' : 'Available'},${v.customerName || ''},${v.customerPhone || ''},${v.customerEmail || ''},${v.redeemedAt ? new Date(v.redeemedAt).toLocaleString() : ''}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = `voucher-report-${new Date().toISOString().split('T')[0]}.csv`;
+            link.href = url;
+            link.click();
+        }
+        
+        // Reset system
+        function resetSystem() {
+            if (confirm('⚠️ Are you sure you want to reset ALL data?\n\nThis will:\n- Delete all redemption records\n- Reset all 50 vouchers to available\n\nThis action cannot be undone!')) {
+                if (confirm('Really sure? This will delete everything!')) {
+                    localStorage.removeItem('whatsappVoucherSystem');
+                    vouchers = [];
+                    initSystem();
+                    alert('✅ System has been reset!');
+                }
+            }
+        }
+        
+        // Initialize on load
+        initSystem();
+    </script>
+</body>
+</html>
