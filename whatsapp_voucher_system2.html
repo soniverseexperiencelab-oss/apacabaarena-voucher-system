@@ -730,35 +730,173 @@
             
             let html = '<h3 style="margin: 20px 0 10px 0;">Available Vouchers:</h3>';
             
-            availableVouchers.forEach(v => {
+            availableVouchers.forEach((v, index) => {
                 const voucherUrl = `${BASE_URL}?voucher=${v.code}`;
                 const whatsappMessage = `🎁 *RM10 Cash Voucher for You!*\n\nYou've received a special RM10 cash voucher!\n\n*Voucher Code:* ${v.code}\n\nClick the link below to redeem:\n${voucherUrl}\n\n⚠️ Limited to 50 people only. First come first served!`;
                 const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`;
                 
                 html += `
-                    <div class="voucher-link">
-                        <strong>${v.code}</strong>
+                    <div class="voucher-link" id="voucher-card-${v.code}">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <strong style="font-size: 1.1em;">${v.code}</strong>
+                            <span style="background: #d1fae5; color: #065f46; padding: 5px 12px; border-radius: 20px; font-size: 0.85em; font-weight: 600;">Available</span>
+                        </div>
+                        
+                        <!-- QR Code for this voucher -->
+                        <div style="background: #f9fafb; padding: 15px; border-radius: 8px; text-align: center; margin: 15px 0;">
+                            <div id="individual-qr-${v.code}" style="display: inline-block;"></div>
+                            <div style="margin-top: 10px; font-size: 0.9em; color: #666;">QR Code for ${v.code}</div>
+                        </div>
+                        
                         <div style="margin: 10px 0; font-size: 0.9em; color: #666; word-break: break-all;">
                             ${voucherUrl}
                         </div>
-                        <button class="copy-btn" onclick="copyToClipboard('${voucherUrl}', this)">
-                            📋 Copy Link
-                        </button>
-                        <button class="copy-btn whatsapp-btn" onclick="window.open('${whatsappUrl}', '_blank')" style="margin-left: 10px; background: #25D366;">
-                            📱 Send via WhatsApp
-                        </button>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                            <button class="copy-btn" onclick="copyToClipboard('${voucherUrl}', this)">
+                                📋 Copy Link
+                            </button>
+                            <button class="copy-btn whatsapp-btn" onclick="window.open('${whatsappUrl}', '_blank')" style="background: #25D366;">
+                                💬 WhatsApp Text
+                            </button>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                            <button class="copy-btn" onclick="downloadSingleQR('${v.code}')" style="background: #3b82f6;">
+                                📥 Download QR
+                            </button>
+                            <button class="copy-btn" onclick="sendQRViaWhatsApp('${v.code}')" style="background: #25D366;">
+                                📱 Send QR Image
+                            </button>
+                        </div>
                     </div>
                 `;
             });
             
-            // Add bulk copy option
+            // Add bulk options
             html += `
-                <button onclick="copyAllLinks()" style="margin-top: 20px; background: #10b981;">
-                    📋 Copy All Available Links
-                </button>
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e5e7eb;">
+                    <h3 style="margin-bottom: 15px;">Bulk Actions:</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button onclick="copyAllLinks()" style="background: #10b981;">
+                            📋 Copy All Links
+                        </button>
+                        <button onclick="downloadAllIndividualQRs()" style="background: #3b82f6;">
+                            📥 Download All QRs
+                        </button>
+                    </div>
+                </div>
             `;
             
             linksDiv.innerHTML = html;
+            
+            // Generate QR codes after DOM is ready
+            setTimeout(() => {
+                availableVouchers.forEach(v => {
+                    const voucherUrl = `${BASE_URL}?voucher=${v.code}`;
+                    new QRCode(document.getElementById(`individual-qr-${v.code}`), {
+                        text: voucherUrl,
+                        width: 200,
+                        height: 200,
+                        colorDark: '#000000',
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                });
+            }, 100);
+        }
+        
+        // Download single QR code as image
+        function downloadSingleQR(code) {
+            const qrElement = document.getElementById(`individual-qr-${code}`);
+            const canvas = qrElement.querySelector('canvas');
+            
+            if (canvas) {
+                // Create a new canvas with voucher details
+                const finalCanvas = document.createElement('canvas');
+                const ctx = finalCanvas.getContext('2d');
+                
+                // Set canvas size (QR + text area)
+                finalCanvas.width = 400;
+                finalCanvas.height = 500;
+                
+                // White background
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+                
+                // Add border
+                ctx.strokeStyle = '#667eea';
+                ctx.lineWidth = 8;
+                ctx.strokeRect(10, 10, finalCanvas.width - 20, finalCanvas.height - 20);
+                
+                // Add title
+                ctx.fillStyle = '#667eea';
+                ctx.font = 'bold 28px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('🎁 RM10 Cash Voucher', finalCanvas.width / 2, 60);
+                
+                // Add voucher code
+                ctx.fillStyle = '#333333';
+                ctx.font = 'bold 32px Arial';
+                ctx.fillText(code, finalCanvas.width / 2, 105);
+                
+                // Add QR code
+                const qrSize = 250;
+                const qrX = (finalCanvas.width - qrSize) / 2;
+                const qrY = 130;
+                ctx.drawImage(canvas, qrX, qrY, qrSize, qrSize);
+                
+                // Add instruction
+                ctx.fillStyle = '#666666';
+                ctx.font = '18px Arial';
+                ctx.fillText('Scan to redeem RM10', finalCanvas.width / 2, 410);
+                
+                // Add value
+                ctx.fillStyle = '#10b981';
+                ctx.font = 'bold 36px Arial';
+                ctx.fillText('RM10', finalCanvas.width / 2, 460);
+                
+                // Download
+                const url = finalCanvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = `voucher-${code}.png`;
+                link.href = url;
+                link.click();
+                
+                // Show success message
+                alert(`✅ QR code for ${code} downloaded!\n\nYou can now send this image to your customer via WhatsApp, Email, or any messaging app.`);
+            }
+        }
+        
+        // Send QR via WhatsApp
+        function sendQRViaWhatsApp(code) {
+            alert(`📱 How to send QR code via WhatsApp:\n\n1. Click "Download QR" button first\n2. The image will be saved to your device\n3. Open WhatsApp\n4. Select customer\n5. Click attach (📎) → Photo\n6. Select the downloaded QR code image\n7. Add message: "Here's your RM10 voucher! Scan to redeem."\n8. Send!\n\nThe customer can then scan the QR code directly from WhatsApp to redeem.`);
+            
+            // Also trigger download
+            downloadSingleQR(code);
+        }
+        
+        // Download all individual QRs
+        function downloadAllIndividualQRs() {
+            const availableVouchers = vouchers.filter(v => !v.redeemed);
+            
+            if (availableVouchers.length === 0) {
+                alert('All vouchers have been redeemed!');
+                return;
+            }
+            
+            if (!confirm(`This will download ${availableVouchers.length} QR code images.\n\nEach voucher will be saved as a separate PNG file.\n\nContinue?`)) {
+                return;
+            }
+            
+            alert(`📥 Starting download of ${availableVouchers.length} QR codes...\n\nPlease wait a moment. Files will download one by one.`);
+            
+            // Download each QR with a small delay
+            availableVouchers.forEach((v, index) => {
+                setTimeout(() => {
+                    downloadSingleQR(v.code);
+                }, index * 500); // 500ms delay between downloads
+            });
         }
         
         // Copy to clipboard
